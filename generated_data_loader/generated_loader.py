@@ -28,10 +28,10 @@ class GeneratedLoader(Dataset):
                 t0 = time.time()
                 if image_name[-1].lower() == 'g':  # to avoid e.g. thumbs.db files
                     if nr_of_channels == 1:  # Gray scale image -> MR image
-                        image = cv2.imread(os.path.join(data_path, image_name))
+                        image = cv2.normalize(cv2.imread(os.path.join(data_path, image_name)), None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
                         image = image[:, :, np.newaxis]
                     else:  # RGB image -> street view
-                        image = cv2.open(os.path.join(data_path, image_name))
+                        image = cv2.normalize(cv2.open(os.path.join(data_path, image_name)), None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
                     #t1 = time.time()
                     #image = normalize_array(image)
                     t2 = time.time()

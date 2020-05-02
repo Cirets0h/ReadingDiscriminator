@@ -27,8 +27,7 @@ def main_loader(set, level):
             print('imgs: [{}/{} ({:.0f}%)]'.format(i, len(info), 100. * i / len(info)))
 
         try:
-            img = cv2.imread(img_path + '.png')
-            img = 1 - img.astype(np.float32) / 255.0
+            img = cv2.normalize(cv2.imread(img_path + '.png'), None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
         except:
             continue
 
