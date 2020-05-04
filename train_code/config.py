@@ -1,5 +1,5 @@
 
-classes = '_!"#&\'()*+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz '
+classes = '_!"#&\'()[]+,-./0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz '
 cdict = {c:i for i,c in enumerate(classes)}
 icdict = {i:c for i,c in enumerate(classes)}
 
@@ -12,6 +12,7 @@ batch_size = 1
 iter_size = 16
 # fixed_size
 
-save_model_name = 'saved_models/htr_net_' + data_name + '_t_crnn.pt'
+model_path = 'saved_models/'
+save_model_name = 'crnn_' + data_name + '.pt'
 #load_model_name = None
-load_model_name = 'saved_models/htr_net_' + data_name + '_t_crnn.pt'
+load_model_name = 'crnn_' + data_name + '.pt'

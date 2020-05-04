@@ -14,21 +14,20 @@ from utils.auxilary_functions import image_resize
 
 class GeneratedLoader(Dataset):
 
-    def __init__(self, nr_of_channels=1, fixed_size=(128, None)):
+    def __init__(self, set = 'train', nr_of_channels=1, fixed_size=(128, None)):
 
         self.fixed_size = fixed_size
 
-        save_file = dataset_path + '/' + 'generated_1' + '.pt'
+        save_file = dataset_path + 'generated_' + set + '.pt'
 
         if isfile(save_file) is False:
             data = []
             i = 0
             for image_name in data_image_names:
-                print('Imagename: ' + image_name)
                 t0 = time.time()
                 if image_name[-1].lower() == 'g':  # to avoid e.g. thumbs.db files
                     if nr_of_channels == 1:  # Gray scale image -> MR image
-                        image = cv2.normalize(cv2.imread(os.path.join(data_path, image_name)), None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+                        image = cv2.normalize(cv2.imread(os.path.join(data_path, image_name), cv2.IMREAD_GRAYSCALE), None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
                         image = image[:, :, np.newaxis]
                     else:  # RGB image -> street view
                         image = cv2.normalize(cv2.open(os.path.join(data_path, image_name)), None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
@@ -45,7 +44,7 @@ class GeneratedLoader(Dataset):
 
                 i +=1
 
-                if i % (len(data_image_names)/10) == 0:
+                if i % (len(data_image_names)//10) == 0:
                     print(str(i) + '/' + str(data_image_names))
             torch.save(data, save_file)
         else:
@@ -56,7 +55,6 @@ class GeneratedLoader(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-
         img = self.data[index][0]
         transcr = self.data[index][1]
 
@@ -73,6 +71,6 @@ class GeneratedLoader(Dataset):
 
         img = image_resize(img, height=nheight-16, width=nwidth)
        # img = centered(img, (nheight, int(1.2 * nwidth) + 32))
-        img = torch.Tensor(img).float().unsqueeze(0)
+        img = torch.Tensor(img).float() #.unsqueeze(0)
 
         return img, transcr
