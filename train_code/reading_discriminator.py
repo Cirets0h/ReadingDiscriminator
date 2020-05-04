@@ -1,10 +1,11 @@
 import logging
 from os.path import isfile
 
+import numpy as np
 import torch.cuda
 from torch.autograd import Variable
 from utils.auxilary_functions import torch_augm
-from utils.save_load import my_torch_save, my_torch_load
+from train_code.config import *
 import editdistance
 
 logger = logging.getLogger('Initialized Reading Discriminator')
@@ -49,7 +50,7 @@ class ReadingDiscriminator():
                     pos += 1
                     if len(estimated_word) > 5:
                         pos_5 += 1
-                print('orig:: ' + transcr)
+                print('orig:: ' + tst_transcr)
                 print('greedy dec: ' + estimated_word)
                 print('Accuracy: ' + str(pos) + '/' + str(int(iter_idx / 50 + 1)) + '= ' + str(
                     pos / int(iter_idx / 50 + 1)) + '| over 5 chars: ' + str(pos_5))
@@ -59,7 +60,7 @@ class ReadingDiscriminator():
 
 
     def train(self, img, transcr):
-        img = img.transpose(1, 3).transpose(2, 3)
+        #img = img.transpose(1, 3).transpose(2, 3)
         img = Variable(img.to(device))
         # cuda augm - alternatively for cpu use it on dataloader
         img = torch_augm(img)
@@ -67,7 +68,7 @@ class ReadingDiscriminator():
 
         act_lens = torch.IntTensor(img.size(0) * [output.size(0)])
         try:
-            labels = Variable(torch.IntTensor([self.cdict[c] for c in ''.join(transcr)]))
+            labels = Variable(torch.IntTensor([cdict[c] for c in ''.join(transcr)]))
         except KeyError:
             print('Training failed because of unknown key: ' + str(KeyError))
             return -1, ''
@@ -91,7 +92,7 @@ class ReadingDiscriminator():
         self.net.eval()
         try:
 
-            img = img.unsqueeze(0).transpose(1, 3).transpose(2, 3)
+            img = img.unsqueeze(0) #.transpose(1, 3).transpose(2, 3)
             with torch.no_grad():
                 tst_o = self.net(Variable(img.cuda()))
             tdec = tst_o.log_softmax(2).argmax(2).permute(1, 0).cpu().numpy().squeeze()
@@ -101,7 +102,7 @@ class ReadingDiscriminator():
         except:
             tt = ''
             print('Error occured')
-        estimated_word = ''.join([self.icdict[t] for t in tt]).replace('_', '')
+        estimated_word = ''.join([icdict[t] for t in tt]).replace('_', '')
         self.net.train()
 
         return estimated_word
@@ -118,7 +119,7 @@ class ReadingDiscriminator():
                 o = self.net(img)
             tdec = o.argmax(2).permute(1, 0).cpu().numpy().squeeze()
             tt = [v for j, v in enumerate(tdec) if j == 0 or v != tdec[j - 1]]
-            dec_transcr = ''.join([self.icdict[t] for t in tt]).replace('_', '')
+            dec_transcr = ''.join([icdict[t] for t in tt]).replace('_', '')
             # tdec, _, _, tdec_len = decoder.decode(o.softmax(2).permute(1, 0, 2))
             # dec_transcr = ''.join([icdict[t.item()] for t in tdec[0, 0][:tdec_len[0, 0].item()]])
 
@@ -131,12 +132,12 @@ class ReadingDiscriminator():
         self.net.train()
 
     def saveModel(self, filename):
-        torch.save(self.net.state_dict(), self.model_path + filename)
+        torch.save(self.net.state_dict(), model_path + filename)
 
     def loadModel(self, filename):
-        if isfile(self.model_path + filename):
-            load_parameters = torch.load(self.model_path + filename)
+        if isfile(model_path + filename):
+            load_parameters = torch.load(model_path + filename)
             self.net.load_state_dict(load_parameters)
             self.net.to(device)
         elif filename is not None:
-            logger.info('Loading model parameters failed, ' + str(self.model_path + filename) + 'not found')
+            logger.info('Loading model parameters failed, ' + str(model_path + filename) + 'not found')
